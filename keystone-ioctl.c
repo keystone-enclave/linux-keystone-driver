@@ -7,7 +7,8 @@
 #include "keystone_user.h"
 #include <linux/uaccess.h>
 
-int keystone_create_enclave(unsigned long arg) {
+int keystone_create_enclave(unsigned long arg)
+{
   /* create parameters */
   struct keystone_ioctl_create_enclave* enclp = (struct keystone_ioctl_create_enclave*) arg;
 
@@ -25,7 +26,8 @@ int keystone_create_enclave(unsigned long arg) {
 }
 
 
-int keystone_finalize_enclave(struct file* filp, unsigned long arg) {
+int keystone_finalize_enclave(struct file* filp, unsigned long arg)
+{
   int ret;
   enclave_t* enclave;
   struct utm_t* utm;
@@ -114,7 +116,8 @@ int keystone_finalize_enclave(struct file* filp, unsigned long arg) {
 
 }
 
-int keystone_run_enclave(unsigned long arg) {
+int keystone_run_enclave(unsigned long arg)
+{
   int ret = 0;
   unsigned long ueid;
   enclave_t* enclave;
@@ -138,7 +141,8 @@ int keystone_run_enclave(unsigned long arg) {
   return ret;
 }
 
-int keystone_add_page(unsigned long arg) {
+int keystone_add_page(unsigned long arg)
+{
   int ret = 0;
   vaddr_t epm_page;
   struct addr_packed* addr = (struct addr_packed*) arg;
@@ -184,7 +188,8 @@ int keystone_add_page(unsigned long arg) {
 /* This IOCTL allows user to prepare page tables prior to the actual page allocation.
  * This is needed when an enclave requires linear physical layout.
  * The user must call this before allocating pages */
-int keystone_alloc_vspace(unsigned long arg) {
+int keystone_alloc_vspace(unsigned long arg)
+{
   int ret = 0;
   vaddr_t va;
   size_t num_pages;
@@ -210,7 +215,8 @@ int keystone_alloc_vspace(unsigned long arg) {
 }
 
 
-int keystone_destroy_enclave(unsigned long arg) {
+int keystone_destroy_enclave(unsigned long arg)
+{
   int ret;
   enclave_t* enclave;
   struct keystone_ioctl_create_enclave* enclp = (struct keystone_ioctl_create_enclave*) arg;
@@ -235,7 +241,8 @@ int keystone_destroy_enclave(unsigned long arg) {
   return 0;
 }
 
-int keystone_resume_enclave(unsigned long arg) {
+int keystone_resume_enclave(unsigned long arg)
+{
   int ret = 0;
   struct keystone_ioctl_run_enclave* resume = (struct keystone_ioctl_run_enclave*) arg;
   unsigned long ueid = resume->eid;
@@ -255,7 +262,8 @@ int keystone_resume_enclave(unsigned long arg) {
   return ret;
 }
 
-long keystone_ioctl(struct file* filep, unsigned int cmd, unsigned long arg) {
+long keystone_ioctl(struct file* filep, unsigned int cmd, unsigned long arg)
+{
   long ret;
   char data[256];
   size_t ioc_size;
@@ -266,7 +274,8 @@ long keystone_ioctl(struct file* filep, unsigned int cmd, unsigned long arg) {
   ioc_size = _IOC_SIZE(cmd);
   ioc_size = ioc_size > sizeof(data) ? sizeof(data) : ioc_size;
 
-  if (copy_from_user(data,(void __user*) arg, ioc_size))
+  if (copy_from_user(data,(void __user
+  *) arg, ioc_size))
   return -EFAULT;
 
   switch (cmd) {
@@ -299,7 +308,8 @@ long keystone_ioctl(struct file* filep, unsigned int cmd, unsigned long arg) {
       return -ENOSYS;
   }
 
-  if (copy_to_user((void __user*) arg, data, ioc_size))
+  if (copy_to_user((void __user
+  *) arg, data, ioc_size))
   return -EFAULT;
 
   return ret;
