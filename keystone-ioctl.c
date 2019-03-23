@@ -296,7 +296,8 @@ long keystone_ioctl(struct file* filep, unsigned int cmd, unsigned long arg)
   ioc_size = _IOC_SIZE(cmd);
   ioc_size = ioc_size > sizeof(data) ? sizeof(data) : ioc_size;
 
-  if (copy_from_user(data,(void __user*) arg, ioc_size))
+  if (copy_from_user(data,(void __user
+  *) arg, ioc_size))
   return -EFAULT;
 
   switch (cmd)
@@ -330,7 +331,8 @@ long keystone_ioctl(struct file* filep, unsigned int cmd, unsigned long arg)
       return -ENOSYS;
   }
 
-  if (copy_to_user((void __user*) arg, data, ioc_size))
+  if (copy_to_user((void __user
+  *) arg, data, ioc_size))
   return -EFAULT;
 
   return ret;
