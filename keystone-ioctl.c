@@ -44,7 +44,7 @@ int keystone_finalize_enclave(unsigned long arg)
 
   /* SBI Call */
   create_args.epm_region.paddr = enclave->epm->pa;
-  create_args.epm_region.size = enclave->epm->size;
+  create_args.epm_region.size = enclave->epm->size / 2; // half of it for testing dyn alloc
 
   utm = enclave->utm;
 
@@ -87,9 +87,43 @@ error_destroy_enclave:
 
 }
 
+int __run_enclave_loop(uintptr_t sbi_code, unsigned int sm_eid)
+{
+  uintptr_t sbi_return;
+  int ret = 0;
+
+  // FIXME: we're bit-packing the return to simulate dynamic memory allocation :P
+  sbi_return = SBI_CALL_1(sbi_code, sm_eid);
+  ret = sbi_return & 0xffff;
+
+  while (true)
+  {
+    /* if the enclave was interrupted, just resume the enclave */
+    if(ret == ENCLAVE_INTERRUPTED)
+    {
+      keystone_handle_interrupts();
+    }
+    else if(ret == ENCLAVE_REQUEST_FREEMEM)
+    {
+      uintptr_t size = sbi_return >> 16;
+      // keystone_info("extending enclave [size: 0x%lx]\n", size);
+      sbi_return = SBI_CALL_2(SBI_SM_EXTEND_ENCLAVE, sm_eid, size);
+      //if(sbi_return)
+      //  keystone_err("SM_EXTEND returned %d\n", sbi_return);
+    }
+    else
+    {
+      break;
+    }
+
+    sbi_return = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, sm_eid);
+    ret = sbi_return & 0xffff;
+  }
+  return ret;
+}
+
 int keystone_run_enclave(unsigned long arg)
 {
-  int ret = 0;
   unsigned long ueid;
   enclave_t* enclave;
   struct keystone_ioctl_run_enclave *run = (struct keystone_ioctl_run_enclave*) arg;
@@ -102,15 +136,7 @@ int keystone_run_enclave(unsigned long arg)
     return -EINVAL;
   }
 
-  ret = SBI_CALL_1(SBI_SM_RUN_ENCLAVE, enclave->eid);
-  /* if the enclave was interrupted, just resume the enclave */
-  while(ret == ENCLAVE_INTERRUPTED)
-  {
-    keystone_handle_interrupts();
-    ret = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, enclave->eid);
-  }
-
-  return ret;
+  return __run_enclave_loop(SBI_SM_RUN_ENCLAVE, enclave->eid);
 }
 
 int keystone_add_page(unsigned long arg)
@@ -264,7 +290,6 @@ int keystone_destroy_enclave(unsigned long arg)
 
 int keystone_resume_enclave(unsigned long arg)
 {
-  int ret = 0;
   struct keystone_ioctl_run_enclave *resume = (struct keystone_ioctl_run_enclave*) arg;
   unsigned long ueid = resume->eid;
   enclave_t* enclave;
@@ -276,13 +301,7 @@ int keystone_resume_enclave(unsigned long arg)
     return -EINVAL;
   }
 
-  ret = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, enclave->eid);
-  while (ret == ENCLAVE_INTERRUPTED)
-  {
-    keystone_handle_interrupts();
-    ret = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, enclave->eid);
-  }
-  return ret;
+  return __run_enclave_loop(SBI_SM_RESUME_ENCLAVE, enclave->eid);
 }
 
 long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)

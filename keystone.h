@@ -31,9 +31,11 @@ extern struct miscdevice keystone_dev;
 #define SBI_SM_RUN_ENCLAVE      105
 #define SBI_SM_STOP_ENCLAVE     106
 #define SBI_SM_RESUME_ENCLAVE   107
+#define SBI_SM_EXTEND_ENCLAVE   108
 
 /* error codes: need to add more */
 #define ENCLAVE_INTERRUPTED     2
+#define ENCLAVE_REQUEST_FREEMEM 15
 
 /* don't want to taint asm/sbi.h, so just copied SBI_CALL and increased # args */
 #define _SBI_CALL(which, arg0, arg1, arg2, arg3, arg4, arg5) ({			\

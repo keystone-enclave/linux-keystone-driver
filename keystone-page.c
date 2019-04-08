@@ -84,17 +84,21 @@ int epm_init(epm_t* epm, unsigned int min_pages)
   order = ilog2(min_pages - 1) + 1;
   count = 0x1 << order;
 
+  count *= 2;
+  order += 1;
   /* prevent kernel from complaining about an invalid argument */
   if (order <= MAX_ORDER)
+    // allcoate 2x more pages to simulate dynamic page allocation
     epm_vaddr = (vaddr_t) __get_free_pages(GFP_HIGHUSER, order);
 
 #ifdef CONFIG_CMA
   /* If buddy allocator fails, we fall back to the CMA */
   if (!epm_vaddr) {
     epm->is_cma = 1;
-    count = min_pages;
+    count = min_pages * 2;
 
     epm_vaddr = (vaddr_t) dma_alloc_coherent(keystone_dev.this_device,
+      // allocate one more page to simulate dynamic page allocation
       count << PAGE_SHIFT,
       &device_phys_addr,
       GFP_KERNEL);
@@ -105,7 +109,7 @@ int epm_init(epm_t* epm, unsigned int min_pages)
 #endif
 
   if(!epm_vaddr) {
-    keystone_err("failed to allocate %lu page(s)\n", count);
+    keystone_err("failed to allocate %lu page(s) [CMA:%d]\n", count, epm->is_cma);
     return -ENOMEM;
   }
 
