@@ -29,8 +29,6 @@ int epm_destroy(struct epm* epm) {
 /* Create an EPM and initialize the free list */
 int epm_init(struct epm* epm, unsigned int min_pages)
 {
-  pte_t* t;
-
   vaddr_t epm_vaddr = 0;
   unsigned long order = 0;
   unsigned long count = min_pages;
@@ -69,7 +67,7 @@ int epm_init(struct epm* epm, unsigned int min_pages)
   /* zero out */
   memset((void*)epm_vaddr, 0, PAGE_SIZE*count);
 
-  epm->root_page_table = epm_vaddr;
+  epm->root_page_table = (void*)epm_vaddr;
   epm->pa = __pa(epm_vaddr);
   epm->order = order;
   epm->size = count << PAGE_SHIFT;
@@ -141,7 +139,7 @@ static pte_t* __ept_walk_internal(struct list_head* pg_list, pte_t* root_page_ta
      * Otherwise the VA is invalid
      * */
     if (unlikely(!(pte_val(t[idx]) & PTE_V)))
-      return -1;
+      return NULL;
     t = (pte_t*) __va(pte_ppn(t[idx]) << RISCV_PGSHIFT);
   }
   return &t[pt_idx(addr, 0)];
