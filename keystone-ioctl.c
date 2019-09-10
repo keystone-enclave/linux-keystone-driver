@@ -116,12 +116,6 @@ int keystone_run_enclave(unsigned long arg)
   }
 
   ret = SBI_CALL_1(SBI_SM_RUN_ENCLAVE, enclave->eid);
-  /* if the enclave was interrupted, just resume the enclave */
-  while(ret == ENCLAVE_INTERRUPTED)
-  {
-    keystone_handle_interrupts();
-    ret = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, enclave->eid);
-  }
 
   return ret;
 }
@@ -208,11 +202,7 @@ int keystone_resume_enclave(unsigned long arg)
   }
 
   ret = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, enclave->eid);
-  while (ret == ENCLAVE_INTERRUPTED)
-  {
-    keystone_handle_interrupts();
-    ret = SBI_CALL_1(SBI_SM_RESUME_ENCLAVE, enclave->eid);
-  }
+
   return ret;
 }
 
