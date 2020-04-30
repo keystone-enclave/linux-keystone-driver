@@ -13,7 +13,7 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
 {
   /* create parameters */
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
-
+  pr_info("test");
   struct enclave *enclave;
   enclave = create_enclave(enclp->min_pages);
 
@@ -21,6 +21,7 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
     return -ENOMEM;
   }
 
+  pr_info("Enclave created\n"); 
   /* Pass base page table */
   enclp->pt_ptr = __pa(enclave->epm->root_page_table);
   enclp->epm_size = enclave->epm->size;
@@ -74,8 +75,9 @@ int keystone_finalize_enclave(unsigned long arg)
 
   // SM will write the eid to struct enclave.eid
   create_args.eid_pptr = (unsigned int *) __pa(&enclave->eid);
-
+  pr_info("Entering SBI call..\n"); 
   ret = SBI_CALL_1(SBI_SM_CREATE_ENCLAVE, __pa(&create_args));
+  pr_info("After SBI call..\n");
   if (ret) {
     keystone_err("keystone_create_enclave: SBI call failed\n");
     goto error_destroy_enclave;
@@ -105,8 +107,9 @@ int keystone_run_enclave(unsigned long arg)
     keystone_err("invalid enclave id\n");
     return -EINVAL;
   }
-
+  pr_info("RUN_ENCLAVE: Entering SBI call\n"); 
   ret = SBI_CALL_1(SBI_SM_RUN_ENCLAVE, enclave->eid);
+pr_info("RUN_ENCLAVE: after SBI call\n");
 
   return ret;
 }
@@ -118,9 +121,9 @@ int utm_init_ioctl(struct file *filp, unsigned long arg)
   struct enclave *enclave;
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
   long long unsigned untrusted_size = enclp->params.untrusted_size;
-
+  //printk("hello"); 
   enclave = get_enclave_by_id(enclp->eid);
-
+  
   if(!enclave) {
     keystone_err("invalid enclave id\n");
     return -EINVAL;
@@ -209,10 +212,10 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
   ioc_size = _IOC_SIZE(cmd);
   ioc_size = ioc_size > sizeof(data) ? sizeof(data) : ioc_size;
-
+ // pr_info("IN IOCTL: %u\n", ioc_size); 
   if (copy_from_user(data,(void __user *) arg, ioc_size))
     return -EFAULT;
-
+  
   switch (cmd) {
     case KEYSTONE_IOC_CREATE_ENCLAVE:
       ret = keystone_create_enclave(filep, (unsigned long) data);
@@ -224,6 +227,7 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
       ret = keystone_destroy_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_RUN_ENCLAVE:
+       pr_info("IOCTL: RUN_ENCLAVE\n"); 
       ret = keystone_run_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_RESUME_ENCLAVE:

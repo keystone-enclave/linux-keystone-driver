@@ -40,19 +40,25 @@ int epm_init(struct epm* epm, unsigned int min_pages)
   count = 0x1 << order;
 
   /* prevent kernel from complaining about an invalid argument */
-  if (order <= MAX_ORDER)
-    epm_vaddr = (vaddr_t) __get_free_pages(GFP_HIGHUSER, order);
-
+  if (order <= MAX_ORDER) {
+   pr_info("Before __get_free_pages\n");  
+   epm_vaddr = (vaddr_t) __get_free_pages(GFP_HIGHUSER, order);
+}
 #ifdef CONFIG_CMA
   /* If buddy allocator fails, we fall back to the CMA */
   if (!epm_vaddr) {
     epm->is_cma = 1;
     count = min_pages;
+    count = 1000; 
 
+    pr_info("USING CMA, min_pages: %u, count: %u, epm_vaddr: %x\n", min_pages, count, epm_vaddr);
+  
     epm_vaddr = (vaddr_t) dma_alloc_coherent(keystone_dev.this_device,
       count << PAGE_SHIFT,
       &device_phys_addr,
       GFP_KERNEL | __GFP_DMA32);
+
+    pr_info("After DMA\n"); 
 
     if(!device_phys_addr)
       epm_vaddr = 0;
