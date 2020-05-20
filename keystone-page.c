@@ -41,7 +41,6 @@ int epm_init(struct epm* epm, unsigned int min_pages)
 
   /* prevent kernel from complaining about an invalid argument */
   if (order <= MAX_ORDER) {
-   pr_info("Before __get_free_pages\n");  
    epm_vaddr = (vaddr_t) __get_free_pages(GFP_HIGHUSER, order);
 }
 #ifdef CONFIG_CMA
@@ -57,8 +56,6 @@ int epm_init(struct epm* epm, unsigned int min_pages)
       count << PAGE_SHIFT,
       &device_phys_addr,
       GFP_KERNEL | __GFP_DMA32);
-
-    pr_info("After DMA\n"); 
 
     if(!device_phys_addr)
       epm_vaddr = 0;
