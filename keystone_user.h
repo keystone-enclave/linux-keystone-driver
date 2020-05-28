@@ -32,95 +32,51 @@
 
 
 #if __riscv_xlen == 64
-
-struct runtime_params_t {
-  __u64 runtime_entry;
-  __u64 user_entry;
-  __u64 untrusted_ptr;
-  __u64 untrusted_size;
-};
-
-struct keystone_ioctl_create_enclave {
-  __u64 eid;
-
-  //Min pages required
-  __u64 min_pages;
-
-  // virtual addresses
-  __u64 runtime_vaddr;
-  __u64 user_vaddr;
-
-  __u64 pt_ptr;
-  __u64 utm_free_ptr;
-
-  //Used for hash
-  __u64 epm_paddr;
-  __u64 utm_paddr;
-  __u64 runtime_paddr;
-  __u64 user_paddr;
-  __u64 free_paddr;
-
-  __u64 epm_size;
-  __u64 utm_size;
-
-  // Runtime Parameters
-  struct runtime_params_t params;
-};
-
-struct keystone_ioctl_run_enclave {
-  __u64 eid;
-  __u64 entry;
-  __u64 args_ptr;
-  __u64 args_size;
-  __u64 ret;
-};
-
+typedef __u64 u_ptr;
 #elif __riscv_xlen == 32
+typedef __u32 u_ptr;
+#endif 
 
 struct runtime_params_t {
-  __u32 runtime_entry;
-  __u32 user_entry;
-  __u32 untrusted_ptr;
-  __u32 untrusted_size;
+  u_ptr runtime_entry;
+  u_ptr user_entry;
+  u_ptr untrusted_ptr;
+  u_ptr  untrusted_size;
 };
 
 struct keystone_ioctl_create_enclave {
-  __u32 eid;
+  u_ptr eid;
 
   //Min pages required
-  __u32 min_pages;
+  u_ptr min_pages;
 
   // virtual addresses
-  __u32 runtime_vaddr;
-  __u32 user_vaddr;
+  u_ptr runtime_vaddr;
+  u_ptr user_vaddr;
 
-  __u32 pt_ptr;
-  __u32 utm_free_ptr;
+  u_ptr pt_ptr;
+  u_ptr utm_free_ptr;
 
   //Used for hash
-  __u32 epm_paddr;
-  __u32 utm_paddr;
-  __u32 runtime_paddr;
-  __u32 user_paddr;
-  __u32 free_paddr;
+  u_ptr epm_paddr;
+  u_ptr utm_paddr;
+  u_ptr runtime_paddr;
+  u_ptr user_paddr;
+  u_ptr free_paddr;
 
-  __u32 epm_size;
-  __u32 utm_size;
+  u_ptr epm_size;
+  u_ptr utm_size;
 
   // Runtime Parameters
   struct runtime_params_t params;
 };
 
 struct keystone_ioctl_run_enclave {
-  __u32 eid;
-  __u32 entry;
-  __u32 args_ptr;
-  __u32 args_size;
-  __u32 ret;
+  u_ptr eid;
+  u_ptr entry;
+  u_ptr args_ptr;
+  u_ptr args_size;
+  u_ptr ret;
 };
-
-#else
-#error "Unexpected __riscv_xlen"
-#endif
 
 #endif

@@ -48,9 +48,10 @@ int epm_init(struct epm* epm, unsigned int min_pages)
   if (!epm_vaddr) {
     epm->is_cma = 1;
     count = min_pages;
+    /* Because CMA does'nt work in RV32, we force the pages allocated to be 1000. */
     count = 1000; 
 
-    pr_info("USING CMA, min_pages: %u, count: %u, epm_vaddr: %x\n", min_pages, count, epm_vaddr);
+//    pr_info("USING CMA, min_pages: %u, count: %u, epm_vaddr: %x\n", min_pages, count, epm_vaddr);
   
     epm_vaddr = (vaddr_t) dma_alloc_coherent(keystone_dev.this_device,
       count << PAGE_SHIFT,
