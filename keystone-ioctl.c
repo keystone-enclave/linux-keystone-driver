@@ -13,6 +13,7 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
 {
   /* create parameters */
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
+
   struct enclave *enclave;
   enclave = create_enclave(enclp->min_pages);
 
@@ -72,8 +73,9 @@ int keystone_finalize_enclave(unsigned long arg)
   create_args.params = enclp->params;
 
   // SM will write the eid to struct enclave.eid
-  create_args.eid_pptr = (unsigned int *) __pa(&enclave->eid);
-  ret = SBI_CALL_1(SBI_SM_CREATE_ENCLAVE, __pa(&create_args));
+  create_args.eid_vptr = &enclave->eid;
+
+  ret = SBI_CALL_1(SBI_SM_CREATE_ENCLAVE, &create_args);
   if (ret) {
     keystone_err("keystone_create_enclave: SBI call failed\n");
     goto error_destroy_enclave;
@@ -103,6 +105,7 @@ int keystone_run_enclave(unsigned long arg)
     keystone_err("invalid enclave id\n");
     return -EINVAL;
   }
+
   ret = SBI_CALL_1(SBI_SM_RUN_ENCLAVE, enclave->eid);
 
   return ret;
@@ -115,9 +118,9 @@ int utm_init_ioctl(struct file *filp, unsigned long arg)
   struct enclave *enclave;
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
   long long unsigned untrusted_size = enclp->params.untrusted_size;
-  //printk("hello"); 
-  enclave = get_enclave_by_id(enclp->eid);
   
+  enclave = get_enclave_by_id(enclp->eid);
+
   if(!enclave) {
     keystone_err("invalid enclave id\n");
     return -EINVAL;
@@ -208,7 +211,7 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
   ioc_size = ioc_size > sizeof(data) ? sizeof(data) : ioc_size;
   if (copy_from_user(data,(void __user *) arg, ioc_size))
     return -EFAULT;
-  
+
   switch (cmd) {
     case KEYSTONE_IOC_CREATE_ENCLAVE:
       ret = keystone_create_enclave(filep, (unsigned long) data);
@@ -253,7 +256,8 @@ int keystone_release(struct inode *inode, struct file *file) {
   }
 
   /* We need to send destroy enclave just the eid to close. */
-    struct enclave *enclave = get_enclave_by_id(ueid);
+  struct enclave *enclave;
+  enclave = get_enclave_by_id(ueid);
 
   if (!enclave) {
     /* If eid is set to the invalid id, then we do not do anything. */

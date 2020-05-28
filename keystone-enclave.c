@@ -58,6 +58,7 @@ int destroy_enclave(struct enclave* enclave)
 struct enclave* create_enclave(unsigned long min_pages)
 {
   struct enclave* enclave;
+
   enclave = kmalloc(sizeof(struct enclave), GFP_KERNEL);
   if (!enclave){
     keystone_err("failed to allocate enclave struct\n");
