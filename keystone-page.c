@@ -48,7 +48,7 @@ int epm_init(struct epm* epm, unsigned int min_pages)
   if (!epm_vaddr) {
     epm->is_cma = 1;
     count = min_pages;
-    /* Because CMA does'nt work in RV32, we force the pages allocated to be 1000. */
+    /* Because CMA doesn't work in RV32, we force the pages allocated to be 1000. */
     count = 1000; 
 
 //    pr_info("USING CMA, min_pages: %u, count: %u, epm_vaddr: %x\n", min_pages, count, epm_vaddr);
