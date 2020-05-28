@@ -118,7 +118,7 @@ int utm_init_ioctl(struct file *filp, unsigned long arg)
   struct enclave *enclave;
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
   long long unsigned untrusted_size = enclp->params.untrusted_size;
-  
+
   enclave = get_enclave_by_id(enclp->eid);
 
   if(!enclave) {
@@ -209,6 +209,7 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
   ioc_size = _IOC_SIZE(cmd);
   ioc_size = ioc_size > sizeof(data) ? sizeof(data) : ioc_size;
+
   if (copy_from_user(data,(void __user *) arg, ioc_size))
     return -EFAULT;
 
