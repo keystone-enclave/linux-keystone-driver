@@ -40,18 +40,14 @@ int epm_init(struct epm* epm, unsigned int min_pages)
   count = 0x1 << order;
 
   /* prevent kernel from complaining about an invalid argument */
-  if (order <= MAX_ORDER) {
+  if (order <= MAX_ORDER) 
    epm_vaddr = (vaddr_t) __get_free_pages(GFP_HIGHUSER, order);
-}
+
 #ifdef CONFIG_CMA
   /* If buddy allocator fails, we fall back to the CMA */
   if (!epm_vaddr) {
     epm->is_cma = 1;
     count = min_pages;
-    /* Because CMA doesn't work in RV32, we force the pages allocated to be 1000. */
-    count = 1000; 
-
-//    pr_info("USING CMA, min_pages: %u, count: %u, epm_vaddr: %x\n", min_pages, count, epm_vaddr);
   
     epm_vaddr = (vaddr_t) dma_alloc_coherent(keystone_dev.this_device,
       count << PAGE_SHIFT,
