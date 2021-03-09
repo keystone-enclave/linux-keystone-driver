@@ -23,6 +23,8 @@
   _IOR(KEYSTONE_IOC_MAGIC, 0x06, struct keystone_ioctl_create_enclave)
 #define KEYSTONE_IOC_UTM_INIT \
   _IOR(KEYSTONE_IOC_MAGIC, 0x07, struct keystone_ioctl_create_enclave)
+#define KEYSTONE_IOC_CLONE_ENCLAVE \
+  _IOR(KEYSTONE_IOC_MAGIC, 0x08, struct keystone_ioctl_create_enclave_snapshot)
 
 #define RT_NOEXEC 0
 #define USER_NOEXEC 1
@@ -35,6 +37,17 @@ struct runtime_params_t {
   uintptr_t user_entry;
   uintptr_t untrusted_ptr;
   uintptr_t  untrusted_size;
+};
+
+struct keystone_ioctl_create_enclave_snapshot {
+  uintptr_t epm_paddr;
+  uintptr_t utm_paddr;
+
+  uintptr_t epm_size;
+  uintptr_t utm_size;
+
+  uintptr_t eid; 
+  uintptr_t snapshot_eid;
 };
 
 struct keystone_ioctl_create_enclave {

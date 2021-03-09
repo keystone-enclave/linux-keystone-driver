@@ -13,12 +13,21 @@
 #define SBI_SM_DESTROY_ENCLAVE  2002
 #define SBI_SM_RUN_ENCLAVE      2003
 #define SBI_SM_RESUME_ENCLAVE   2005
+#define SBI_SM_CLONE_ENCLAVE    2006
 
 
 struct keystone_sbi_pregion_t
 {
   uintptr_t paddr;
   size_t size;
+};
+
+struct keystone_sbi_clone_create
+{
+  struct keystone_sbi_pregion_t epm_region;
+  struct keystone_sbi_pregion_t utm_region;
+  unsigned long snapshot_eid; 
+  unsigned int* eid_pptr;
 };
 
 struct keystone_sbi_create_t
@@ -40,5 +49,6 @@ struct sbiret sbi_sm_create_enclave(struct keystone_sbi_create_t* args);
 struct sbiret sbi_sm_destroy_enclave(unsigned long eid);
 struct sbiret sbi_sm_run_enclave(unsigned long eid);
 struct sbiret sbi_sm_resume_enclave(unsigned long eid);
+struct sbiret sbi_sm_clone_enclave(struct keystone_sbi_clone_create* args);
 
 #endif

@@ -6,6 +6,12 @@ struct sbiret sbi_sm_create_enclave(struct keystone_sbi_create_t* args) {
       (unsigned long) args, 0, 0, 0, 0, 0);
 }
 
+struct sbiret sbi_sm_clone_enclave(struct keystone_sbi_clone_create* args) {
+  return sbi_ecall(KEYSTONE_SBI_EXT_ID,
+      SBI_SM_CLONE_ENCLAVE,
+      (unsigned long) args, 0, 0, 0, 0, 0);
+}
+
 struct sbiret sbi_sm_run_enclave(unsigned long eid) {
   return sbi_ecall(KEYSTONE_SBI_EXT_ID,
       SBI_SM_RUN_ENCLAVE,
