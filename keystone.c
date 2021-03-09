@@ -53,7 +53,7 @@ int keystone_mmap(struct file* filp, struct vm_area_struct *vma)
   epm = enclave->epm;
   vsize = vma->vm_end - vma->vm_start;
 
-  if(enclave->is_init){
+  if(enclave->is_init && !enclave->is_clone){
     if (vsize > PAGE_SIZE)
       return -EINVAL;
     paddr = __pa(epm->root_page_table) + (vma->vm_pgoff << PAGE_SHIFT);
@@ -67,6 +67,7 @@ int keystone_mmap(struct file* filp, struct vm_area_struct *vma)
     psize = utm->size;
     if (vsize > psize)
       return -EINVAL;
+    // pr_info("utm->ptr: %px, _pa(utm->ptr): %px, vma->vm_start: %px, vsize: %lu\n", utm->ptr, __pa(utm->ptr), vma->vm_start, vsize);
     remap_pfn_range(vma,
                     vma->vm_start,
                     __pa(utm->ptr) >> PAGE_SHIFT,

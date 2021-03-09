@@ -73,6 +73,8 @@ struct keystone_ioctl_create_enclave {
   uintptr_t epm_size;
   uintptr_t utm_size;
 
+  uintptr_t is_clone;
+
   // Runtime Parameters
   struct runtime_params_t params;
 };

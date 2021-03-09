@@ -32,6 +32,7 @@ int keystone_create_enclave_snapshot(struct file *filep, unsigned long arg)
   struct sbiret ret;
   ret = sbi_sm_clone_enclave(&create_clone_args);
   enclave->eid = ret.value;
+  enclave->is_init = false;
 
   return 0; 
 }
@@ -43,6 +44,7 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
 
   struct enclave *enclave;
   enclave = create_enclave(enclp->min_pages);
+  enclave->is_clone = enclp->is_clone; 
 
   if (enclave == NULL) {
     return -ENOMEM;

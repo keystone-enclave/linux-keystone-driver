@@ -56,6 +56,7 @@ struct enclave
   struct utm* utm;
   struct epm* epm;
   bool is_init;
+  bool is_clone;
 };
 
 
