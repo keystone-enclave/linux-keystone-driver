@@ -10,7 +10,7 @@
 
 int __keystone_destroy_enclave(unsigned int ueid);
 
-int keystone_create_enclave_snapshot(struct file *filep, unsigned long arg)
+int keystone_clone_enclave(struct file *filep, unsigned long arg)
 {
 
   /* create parameters */
@@ -22,7 +22,7 @@ int keystone_create_enclave_snapshot(struct file *filep, unsigned long arg)
     return -EINVAL;
   }
 
-  struct keystone_sbi_clone_create create_clone_args; 
+  struct keystone_sbi_clone_create create_clone_args;
   create_clone_args.snapshot_eid = enclp->snapshot_eid;
   create_clone_args.epm_region.paddr = enclp->epm_paddr;
   create_clone_args.utm_region.paddr = enclp->utm_paddr;
@@ -34,7 +34,7 @@ int keystone_create_enclave_snapshot(struct file *filep, unsigned long arg)
   enclave->eid = ret.value;
   enclave->is_init = false;
 
-  return 0; 
+  return 0;
 }
 
 int keystone_create_enclave(struct file *filep, unsigned long arg)
@@ -44,7 +44,7 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
 
   struct enclave *enclave;
   enclave = create_enclave(enclp->min_pages);
-  enclave->is_clone = enclp->is_clone; 
+  enclave->is_clone = enclp->is_clone;
 
   if (enclave == NULL) {
     return -ENOMEM;
@@ -281,7 +281,7 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
       ret = keystone_resume_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_CLONE_ENCLAVE:
-      ret = keystone_create_enclave_snapshot(filep, (unsigned long) data);
+      ret = keystone_clone_enclave(filep, (unsigned long) data);
       break;
     /* Note that following commands could have been implemented as a part of ADD_PAGE ioctl.
      * However, there was a weird bug in compiler that generates a wrong control flow
