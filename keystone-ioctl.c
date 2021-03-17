@@ -22,8 +22,13 @@ int keystone_clone_enclave(struct file *filep, unsigned long arg)
     return -EINVAL;
   }
 
+  struct enclave *snapshot_encl = get_enclave_by_id(enclp->snapshot_eid);
+
+  pr_info("enclp->snapshot_eid: %d, snapshot_encl: %px\n", enclp->snapshot_eid, snapshot_encl);
+  pr_info("snapshot_encl->eid: %d\n", snapshot_encl->eid);
+
   struct keystone_sbi_clone_create create_clone_args;
-  create_clone_args.snapshot_eid = enclp->snapshot_eid;
+  create_clone_args.snapshot_eid = snapshot_encl->eid;
   create_clone_args.epm_region.paddr = enclp->epm_paddr;
   create_clone_args.utm_region.paddr = enclp->utm_paddr;
   create_clone_args.epm_region.size = enclp->epm_size;
@@ -56,6 +61,8 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
 
   /* allocate UID */
   enclp->eid = enclave_idr_alloc(enclave);
+
+  pr_info("[driver] create enclave enclp->eid: %d\n", enclp->eid);
 
   filep->private_data = (void *) enclp->eid;
 
@@ -109,6 +116,9 @@ int keystone_finalize_enclave(unsigned long arg)
   }
 
   enclave->eid = ret.value;
+
+  pr_info("[driver] finalize enclave enclave->eid: %d\n", enclave->eid);
+
 
   return 0;
 
