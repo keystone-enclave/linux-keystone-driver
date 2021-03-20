@@ -74,17 +74,19 @@ struct enclave* create_enclave(unsigned long min_pages)
   if (!enclave->epm)
   {
     keystone_err("failed to allocate epm\n");
-    goto error_destroy_enclave;
+    goto error_free_enclave;
   }
 
   if(epm_init(enclave->epm, min_pages)) {
     keystone_err("failed to initialize epm\n");
-    goto error_destroy_enclave;
+    goto error_free_epm;
   }
   return enclave;
 
- error_destroy_enclave:
-  destroy_enclave(enclave);
+ error_free_epm:
+  kfree(enclave->epm);
+ error_free_enclave:
+  kfree(enclave);
  error_no_free:
   return NULL;
 }
