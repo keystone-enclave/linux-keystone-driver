@@ -29,3 +29,9 @@ struct sbiret sbi_sm_resume_enclave(unsigned long eid) {
       SBI_SM_RESUME_ENCLAVE,
       eid, 0, 0, 0, 0, 0);
 }
+
+struct sbiret sbi_sm_resume_fork_enclave(struct keystone_sbi_resume_fork_t* args){
+  return sbi_ecall(KEYSTONE_SBI_EXT_ID,
+      SBI_SM_RESUME_FORK_ENCLAVE,
+      args, 0, 0, 0, 0, 0);
+}

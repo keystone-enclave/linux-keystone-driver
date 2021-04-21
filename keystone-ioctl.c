@@ -228,7 +228,7 @@ int keystone_resume_enclave(unsigned long data)
   struct sbiret ret;
   struct keystone_ioctl_run_enclave *arg = (struct keystone_ioctl_run_enclave*) data;
   unsigned long ueid = arg->eid;
-  struct enclave* enclave;
+  struct enclave* enclave, *child_enclave;
   enclave = get_enclave_by_id(ueid);
 
   if (!enclave)
@@ -242,7 +242,24 @@ int keystone_resume_enclave(unsigned long data)
     return -EINVAL;
   }
 
-  ret = sbi_sm_resume_enclave(enclave->eid);
+  if(arg->resume_fork){
+
+    struct keystone_sbi_resume_fork_t resume_args;
+    child_enclave = get_enclave_by_id(arg->child_eid);
+
+    resume_args.eid = enclave->eid;
+    resume_args.child_eid = child_enclave->eid;
+
+    if (!child_enclave)
+    {
+    keystone_err("invalid enclave id\n");
+    return -EINVAL;
+    }
+
+    ret = sbi_sm_resume_fork_enclave(&resume_args);
+  } else {
+    ret = sbi_sm_resume_enclave(enclave->eid); 
+  }
 
   arg->error = ret.error;
   arg->value = ret.value;
