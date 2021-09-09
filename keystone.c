@@ -44,8 +44,8 @@ int keystone_mmap(struct file* filp, struct vm_area_struct *vma)
   unsigned long vsize, psize;
   vaddr_t paddr;
   enclave = get_enclave_by_id((unsigned long) filp->private_data);
-  if(!enclave) {
-    keystone_err("invalid enclave id\n");
+  if (!enclave) {
+    keystone_err("invalid enclave id %d in mmap\n", filp->private_data);
     return -EINVAL;
   }
 
@@ -53,7 +53,7 @@ int keystone_mmap(struct file* filp, struct vm_area_struct *vma)
   epm = enclave->epm;
   vsize = vma->vm_end - vma->vm_start;
 
-  if(enclave->is_init && !enclave->is_clone){
+  if (enclave->is_init && !enclave->is_clone){
     if (vsize > PAGE_SIZE)
       return -EINVAL;
     paddr = __pa(epm->root_page_table) + (vma->vm_pgoff << PAGE_SHIFT);

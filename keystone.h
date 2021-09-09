@@ -57,6 +57,8 @@ struct enclave
   struct epm* epm;
   bool is_init;
   bool is_clone;
+  unsigned long snapshot_ueid;
+  int ref_count; // number of children
 };
 
 
