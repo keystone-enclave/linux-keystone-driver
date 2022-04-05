@@ -76,7 +76,7 @@ int keystone_finalize_enclave(unsigned long arg)
   ret = sbi_sm_create_enclave(&create_args);
 
   if (ret.error) {
-    keystone_err("keystone_create_enclave: SBI call failed with error codd %ld\n", ret.error);
+    keystone_err("keystone_create_enclave: SBI call failed with error code %ld\n", ret.error);
     goto error_destroy_enclave;
   }
 
@@ -90,6 +90,45 @@ error_destroy_enclave:
 
   return -EINVAL;
 
+}
+
+int keystone_finalize_library_enclave(unsigned long arg)
+{
+  struct sbiret ret;
+  struct enclave *enclave;
+  struct keystone_sbi_create_t create_args;
+
+  struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
+
+  enclave = get_enclave_by_id(enclp->eid);
+  if(!enclave) {
+    keystone_err("invalid enclave id\n");
+    return -EINVAL;
+  }
+
+  enclave->is_init = false;
+
+  create_args.epm_region.paddr = enclave->epm->pa; 
+  create_args.epm_region.size = enclave->epm->size;
+
+  // Don't need untrusted memory for library enclaves
+  create_args.utm_region.paddr = 0;
+  create_args.utm_region.size = 0;
+
+  ret = sbi_sm_create_library_enclave(&create_args);
+
+  if (ret.error) {
+    keystone_err("keystone_create_library_enclave: SBI call failed with error codd %ld\n", ret.error);
+    goto error_destroy_enclave;
+  }
+
+  return 0;
+
+error_destroy_enclave:
+  /* This can handle partial initialization failure */
+  destroy_enclave(enclave);
+
+  return -EINVAL;
 }
 
 int keystone_run_enclave(unsigned long data)
@@ -242,6 +281,9 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
       break;
     case KEYSTONE_IOC_FINALIZE_ENCLAVE:
       ret = keystone_finalize_enclave((unsigned long) data);
+      break;
+    case KEYSTONE_IOC_FINALIZE_LIBRARY_ENCLAVE:
+      ret = keystone_finalize_library_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_DESTROY_ENCLAVE:
       ret = keystone_destroy_enclave(filep, (unsigned long) data);
