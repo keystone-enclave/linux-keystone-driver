@@ -7,6 +7,7 @@
 #include "keystone_user.h"
 #include <asm/sbi.h>
 #include <linux/uaccess.h>
+#include <linux/string.h>
 
 int __keystone_destroy_enclave(unsigned int ueid);
 
@@ -72,6 +73,7 @@ int keystone_finalize_enclave(unsigned long arg)
   create_args.free_paddr = enclp->free_paddr;
 
   create_args.params = enclp->params;
+  memset(create_args.library_name, 0, NAME_MAX);
 
   ret = sbi_sm_create_enclave(&create_args);
 
@@ -114,6 +116,8 @@ int keystone_finalize_library_enclave(unsigned long arg)
   // Don't need untrusted memory for library enclaves
   create_args.utm_region.paddr = 0;
   create_args.utm_region.size = 0;
+
+  strncpy(create_args.library_name, enclp->libary_name, NAME_MAX);
 
   ret = sbi_sm_create_library_enclave(&create_args);
 

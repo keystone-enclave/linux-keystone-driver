@@ -35,6 +35,8 @@ struct keystone_sbi_create_t
 
   // Parameters
   struct runtime_params_t params;
+
+  char library_name[256]; // TODO: define somewhere
 };
 
 struct sbiret sbi_sm_create_enclave(struct keystone_sbi_create_t* args);
