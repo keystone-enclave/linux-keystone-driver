@@ -31,6 +31,8 @@ int keystone_create_enclave(struct file *filep, unsigned long arg)
   /* allocate UID */
   enclp->eid = enclave_idr_alloc(enclave);
 
+  // keystone_info("Enclave eid on create: %d\n", enclp->eid);
+
   filep->private_data = (void *) enclp->eid;
 
   return 0;
@@ -45,6 +47,8 @@ int keystone_finalize_enclave(unsigned long arg)
   struct keystone_sbi_create_t create_args;
 
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
+
+  // keystone_info("Enclave eid on finalize: %d\n", enclp->eid);
 
   enclave = get_enclave_by_id(enclp->eid);
   if(!enclave) {
@@ -97,14 +101,14 @@ error_destroy_enclave:
 
 int keystone_finalize_library_enclave(unsigned long arg)
 {
-  keystone_info("Finalizing library enclave\n");
+  // keystone_info("Finalizing library enclave\n");
   struct sbiret ret;
   struct enclave *enclave;
   struct keystone_sbi_create_t create_args;
 
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
 
-  keystone_info("Getting enclave by id\n");
+  // keystone_info("Getting enclave by id\n");
   enclave = get_enclave_by_id(enclp->eid);
   if(!enclave) {
     keystone_err("invalid enclave id\n");
@@ -120,21 +124,23 @@ int keystone_finalize_library_enclave(unsigned long arg)
   create_args.utm_region.paddr = 0;
   create_args.utm_region.size = 0;
 
-  keystone_info("Copy library name\n");
+  // keystone_info("Copy library name\n");
   strncpy(create_args.library_name, enclp->library_name, NAME_MAX);
 
-  keystone_info("Library name is %s\n", create_args.library_name);
-  keystone_info("Executing sm call\n");
+  // keystone_info("Library name is %s\n", create_args.library_name);
+  // keystone_info("Executing sm call\n");
 
   ret = sbi_sm_create_library_enclave(&create_args);
 
-  keystone_info("Ret value: %ld; Ret error; %ld\n", ret.value, ret.error);
+  // keystone_info("Ret value: %ld; Ret error; %ld\n", ret.value, ret.error);
   
 
   if (ret.error) {
     keystone_err("keystone_create_library_enclave: SBI call failed with error codd %ld\n", ret.error);
     goto error_destroy_enclave;
   }
+
+  enclave->eid = ret.value;
 
   return 0;
 
@@ -248,10 +254,12 @@ int __keystone_destroy_enclave(unsigned int ueid)
 
 int keystone_destroy_library_enclave(struct file *filep, unsigned long arg)
 {
+  // keystone_info("Destroying Library enclave\n");
+
   int ret;
   struct keystone_ioctl_create_enclave *enclp = (struct keystone_ioctl_create_enclave *) arg;
   unsigned long ueid = enclp->eid;
-
+  
   ret = __keystone_destroy_library_enclave(ueid);
   if (!ret) {
     filep->private_data = NULL;
@@ -264,6 +272,8 @@ int __keystone_destroy_library_enclave(unsigned int ueid)
   struct sbiret ret;
   struct enclave *enclave;
   enclave = get_enclave_by_id(ueid);
+
+  // keystone_info("Enclave eid: %d", ueid);
 
   if (!enclave) {
     keystone_err("invalid enclave id\n");
@@ -316,7 +326,7 @@ int keystone_resume_enclave(unsigned long data)
 
 long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-  keystone_info("In keystone-ioctl\n");
+  // keystone_info("In keystone-ioctl\n");
   long ret;
   char data[512];
 
@@ -333,31 +343,31 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
   switch (cmd) {
     case KEYSTONE_IOC_CREATE_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_CREATE_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_CREATE_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_create_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_FINALIZE_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_FINALIZE_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_FINALIZE_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_finalize_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_FINALIZE_LIBRARY_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_FINALIZE_LIBRARY_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_FINALIZE_LIBRARY_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_finalize_library_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_DESTROY_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_DESTROY_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_DESTROY_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_destroy_enclave(filep, (unsigned long) data);
       break;
      case KEYSTONE_IOC_DESTROY_LIBRARY_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_DESTROY_LIBRARY_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_DESTROY_LIBRARY_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_destroy_library_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_RUN_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_RUN_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_RUN_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_run_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_RESUME_ENCLAVE:
-      keystone_info("Executing command: KEYSTONE_IOC_RESUME_ENCLAVE, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_RESUME_ENCLAVE, 0x%x\n", cmd);
       ret = keystone_resume_enclave((unsigned long) data);
       break;
     /* Note that following commands could have been implemented as a part of ADD_PAGE ioctl.
@@ -365,11 +375,11 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
      * that ends up with an illegal instruction if we combine switch-case and if statements.
      * We didn't identified the exact problem, so we'll have these until we figure out */
     case KEYSTONE_IOC_UTM_INIT:
-      keystone_info("Executing command: KEYSTONE_IOC_UTM_INIT, 0x%x\n", cmd);
+      // keystone_info("Executing command: KEYSTONE_IOC_UTM_INIT, 0x%x\n", cmd);
       ret = utm_init_ioctl(filep, (unsigned long) data);
       break;
     default:
-      keystone_info("Command not implemented, 0x%x\n", cmd);
+      // keystone_info("Command not implemented, 0x%x\n", cmd);
       return -ENOSYS;
   }
 

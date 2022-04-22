@@ -26,7 +26,7 @@ struct sbiret sbi_sm_destroy_enclave(unsigned long eid) {
 
 struct sbiret sbi_sm_destroy_library_enclave(unsigned long eid) {
   return sbi_ecall(KEYSTONE_SBI_EXT_ID,
-      SBI_SM_DESTROY_ENCLAVE,
+      SBI_SM_DESTROY_LIBRARY_ENCLAVE,
       eid, 0, 0, 0, 0, 0);
 }
 
